@@ -5,8 +5,9 @@ import gql from 'graphql-tag';
 import { get } from 'lodash';
 import { createGlobalStyle } from 'styled-components';
 
+import { ssrNotFoundError } from '../lib/nextjs_utils';
 import { withUser } from '../components/UserProvider';
-import ErrorPage from '../components/ErrorPage';
+import ErrorPage, { generateError } from '../components/ErrorPage';
 import Page from '../components/Page';
 import Loading from '../components/Loading';
 import { MAX_CONTRIBUTORS_PER_CONTRIBUTE_CARD } from '../components/contribute-cards/Contribute';
@@ -14,6 +15,7 @@ import CollectiveNotificationBar from '../components/collective-page/CollectiveN
 import * as fragments from '../components/collective-page/graphql/fragments';
 import CollectivePage from '../components/collective-page';
 import CollectiveThemeProvider from '../components/CollectiveThemeProvider';
+import Container from '../components/Container';
 
 /** Add global style to enable smooth scroll on the page */
 const GlobalStyles = createGlobalStyle`
@@ -82,47 +84,52 @@ class NewCollectivePage extends React.Component {
   }
 
   render() {
-    const { data, LoggedInUser, status } = this.props;
+    const { slug, data, LoggedInUser, status } = this.props;
 
-    if (!data || data.error) {
-      return <ErrorPage data={data} />;
-    } else if (data.loading || !data.Collective) {
-      return (
-        <Page {...this.getPageMetaData()} withoutGlobalStyles>
-          <Loading />
-        </Page>
-      );
+    if (!data.loading) {
+      if (!data || data.error) {
+        return <ErrorPage data={data} />;
+      } else if (!data.Collective) {
+        ssrNotFoundError(); // Force 404 when rendered server side
+        return <ErrorPage error={generateError.notFound(slug)} log={false} />;
+      }
     }
 
-    const collective = data.Collective;
-    const isAdmin = Boolean(LoggedInUser && LoggedInUser.canEditCollective(collective));
-    const isRoot = Boolean(LoggedInUser && LoggedInUser.isRoot());
+    const collective = data && data.Collective;
     return (
       <Page {...this.getPageMetaData(collective)} withoutGlobalStyles>
         <GlobalStyles />
-        <CollectiveNotificationBar collective={collective} host={collective.host} status={status} />
-        <CollectiveThemeProvider collective={collective}>
-          {({ onPrimaryColorChange }) => (
-            <CollectivePage
-              collective={collective}
-              host={collective.host}
-              coreContributors={collective.coreContributors}
-              financialContributors={collective.financialContributors}
-              tiers={collective.tiers}
-              events={collective.events}
-              childCollectives={collective.childCollectives}
-              transactions={collective.transactions}
-              expenses={collective.expenses}
-              stats={collective.stats}
-              updates={collective.updates}
-              LoggedInUser={LoggedInUser}
-              isAdmin={isAdmin}
-              isRoot={isRoot}
-              status={status}
-              onPrimaryColorChange={onPrimaryColorChange}
-            />
-          )}
-        </CollectiveThemeProvider>
+        {data.loading ? (
+          <Container borderTop="1px solid #E8E9EB" py={[5, 6]}>
+            <Loading />
+          </Container>
+        ) : (
+          <React.Fragment>
+            <CollectiveNotificationBar collective={collective} host={collective.host} status={status} />
+            <CollectiveThemeProvider collective={collective}>
+              {({ onPrimaryColorChange }) => (
+                <CollectivePage
+                  collective={collective}
+                  host={collective.host}
+                  coreContributors={collective.coreContributors}
+                  financialContributors={collective.financialContributors}
+                  tiers={collective.tiers}
+                  events={collective.events}
+                  childCollectives={collective.childCollectives}
+                  transactions={collective.transactions}
+                  expenses={collective.expenses}
+                  stats={collective.stats}
+                  updates={collective.updates}
+                  LoggedInUser={LoggedInUser}
+                  isAdmin={Boolean(LoggedInUser && LoggedInUser.canEditCollective(collective))}
+                  isRoot={Boolean(LoggedInUser && LoggedInUser.isRoot())}
+                  status={status}
+                  onPrimaryColorChange={onPrimaryColorChange}
+                />
+              )}
+            </CollectiveThemeProvider>
+          </React.Fragment>
+        )}
       </Page>
     );
   }
@@ -132,7 +139,7 @@ class NewCollectivePage extends React.Component {
 const getCollective = graphql(
   gql`
     query NewCollectivePage($slug: String!, $nbContributorsPerContributeCard: Int) {
-      Collective(slug: $slug) {
+      Collective(slug: $slug, throwIfMissing: false) {
         id
         slug
         path

@@ -1,5 +1,5 @@
 # source: http://localhost:3060/graphql
-# timestamp: Fri Sep 27 2019 13:39:01 GMT+0200 (GMT+02:00)
+# timestamp: Thu Oct 03 2019 11:57:30 GMT+0200 (GMT+02:00)
 
 """
 Application model
@@ -1147,10 +1147,10 @@ type Expense implements Transaction {
   updatedAt: DateString
   paymentMethod: PaymentMethodType
   description: String
-  privateMessage: String
-  category: String
+  privateMessage: String @deprecated(reason: "Please use transaction.expense.privateMessage")
+  category: String @deprecated(reason: "Please use transaction.expense.category")
   expense: ExpenseType
-  attachment: String
+  attachment: String @deprecated(reason: "Please use transaction.expense.attachment")
 }
 
 """
@@ -2337,7 +2337,15 @@ type PaymentMethodType {
 This is a root query
 """
 type Query {
-  Collective(slug: String, id: Int): CollectiveInterface
+  Collective(
+    slug: String
+    id: Int
+
+    """
+    If false, will return null instead of an error if collective is not found
+    """
+    throwIfMissing: Boolean = true
+  ): CollectiveInterface
   Tier(id: Int!): Tier
 
   """
@@ -2831,7 +2839,6 @@ interface Transaction {
   collective: CollectiveInterface
   type: String
   description: String
-  privateMessage: String
   createdAt: DateString
   updatedAt: DateString
   refundTransaction: Transaction
