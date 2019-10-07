@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { getLuminance } from 'polished';
 import styled, { css } from 'styled-components';
+import { typography } from 'styled-system';
 
 /**
  * React-Quill usually saves something like `<p><br/></p` when saving with an empty
@@ -90,6 +91,8 @@ const HTMLContent = styled(({ content, ...props }) => {
     }
   }
 
+  ${typography}
+  
   // Apply custom theme if the color is safe to apply
 
   ${props => {
@@ -125,6 +128,10 @@ const HTMLContent = styled(({ content, ...props }) => {
 HTMLContent.propTypes = {
   /** The HTML string. Makes sure this is sanitized properly! */
   content: PropTypes.string,
+};
+
+HTMLContent.defaultProps = {
+  fontSize: 'Paragraph',
 };
 
 export default HTMLContent;

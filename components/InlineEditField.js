@@ -55,6 +55,8 @@ class InlineEditField extends Component {
     mutation: PropTypes.object.isRequired,
     /** Can user edit the description */
     canEdit: PropTypes.bool,
+    /** Use this field if you want to control the edit state by yourself */
+    isEditing: PropTypes.bool,
     /** Called to format the value before submitting */
     formatBeforeSubmit: PropTypes.func,
     /** Set to false to disable edit icon even if user is allowed to edit */
@@ -108,7 +110,8 @@ class InlineEditField extends Component {
   z;
   render() {
     const { field, values, mutation, canEdit, formatBeforeSubmit, showEditIcon, placeholder, children } = this.props;
-    const { isEditing, draft } = this.state;
+    const { draft } = this.state;
+    const isEditing = typeof this.props.isEditing !== 'undefined' ? this.props.isEditing : this.state.isEditing;
     const value = get(values, field);
     const touched = draft !== value;
 
@@ -159,7 +162,7 @@ class InlineEditField extends Component {
                     {error.message.replace('GraphQL error: ', '')}
                   </MessageBox>
                 )}
-                <Flex flexWrap="wrap" justifyContent="space-evenly" mt={2}>
+                <Flex flexWrap="wrap" justifyContent="space-evenly" mt={3}>
                   <FormButton data-cy="InlineEditField-Btn-Cancel" disabled={loading} onClick={this.disableEditor}>
                     <FormattedMessage id="form.cancel" defaultMessage="cancel" />
                   </FormButton>

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Showdown from 'showdown';
-import HTMLEditor from '../HTMLEditor';
+import MediumEditor from '../MediumEditor';
 
 /**
  * Having a convertion with Showdown here will ensure a smooth migration
@@ -13,7 +13,7 @@ const ReverseCompatibleHTMLEditor = props => {
   const defaultValue = props.defaultValue;
   const isMarkdown = defaultValue && defaultValue[0] !== '<';
   const htmlValue = isMarkdown ? new Showdown.Converter().makeHtml(defaultValue) : defaultValue;
-  return <HTMLEditor {...props} defaultValue={htmlValue} />;
+  return <MediumEditor {...props} defaultValue={htmlValue} />;
 };
 
 ReverseCompatibleHTMLEditor.propTypes = {
