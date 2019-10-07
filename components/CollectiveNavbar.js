@@ -196,6 +196,10 @@ const i18nSection = defineMessages({
     id: 'CollectivePage.NavBar.Transactions',
     defaultMessage: 'Transactions',
   },
+  [Sections.GOALS]: {
+    id: 'CollectivePage.NavBar.Goals',
+    defaultMessage: 'Goals',
+  },
 });
 
 /**
@@ -326,7 +330,7 @@ const CollectiveNavbar = ({
                 as={LinkComponent}
                 collectivePath={collective.path || `/${collective.slug}`}
                 section={section}
-                label={intl.formatMessage(i18nSection[section])}
+                label={i18nSection[section] ? intl.formatMessage(i18nSection[section]) : section}
               />
             </MenuLinkContainer>
           ))}

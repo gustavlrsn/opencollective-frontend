@@ -104,7 +104,6 @@ const GoalContainer = styled.div`
 class GoalsCover extends React.Component {
   static propTypes = {
     collective: PropTypes.object.isRequired,
-    LoggedInUser: PropTypes.object,
     interpolation: PropTypes.oneOf(['linear', 'logarithm', 'auto']),
     intl: PropTypes.object.isRequired,
   };
